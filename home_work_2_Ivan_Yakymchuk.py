@@ -1,54 +1,41 @@
-import numpy as np
 import matplotlib.pyplot as plt
-import numpy.random as rnd
+import numpy as np
+from matplotlib.animation import FuncAnimation
 
 
 @np.vectorize
-def func01(n):
-    return (np.power(n - 1,4) - np.power(n + 2,4))/(np.power(2*n + 1, 3) + np.power(n-1, 3))
+def func20_2(n):
+    return (n * np.sin(np.radians(360 / n))) / (2 * np.cos(np.radians(180 / n)))
 
 
+def update(frame):
+    plt.clf()
+    n = v[frame]
+    radius = 1
+    angle = 2 * np.pi / n
+    x_points = [radius * np.cos(i * angle) for i in range(n + 1)]
+    y_points = [radius * np.sin(i * angle) for i in range(n + 1)]
+    x_points.append(x_points[0])
+    y_points.append(y_points[0])
 
-def plot_seq(x, y, b=None, eps=0.01, forall=True):
-    plt.figure(figsize=(12, 9))
-    if b is None:
-        plt.plot(x, y, ".b")
-        return x[-1], y[-1]
-    else:
-        k = -1
-        prev = False
-        for i in range(y.size):
-            if abs(y[i] - b) < eps:
-                if not prev:
-                    k = i
-                    prev = True
-            else:
-                prev = False
-        if not prev:
-            return None, None
+    circle = plt.Circle((0, 0), radius, fill=False, color='b', linewidth=2)
+    plt.gca().add_patch(circle)
+
+    plt.plot(x_points, y_points, marker='o', linestyle='-', color='r', markersize=8)
+    plt.xlim(-1.5, 1.5)
+    plt.ylim(-1.5, 1.5)
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.title(f"Вписаний {n}-кутник у коло")
 
 
-        begin = 0 if forall else k
+def main(k):
+    global v
+    v = np.power(2, np.arange(2,k+1))
 
-        plt.plot(x[begin:], y[begin:], ".b")
-        plt.plot(np.array((x[begin], x[-1])), np.array((b, b)), "-r")
-        plt.plot(np.array((x[begin], x[-1])), np.array((b - eps, b - eps)), "--g")
-        plt.plot(np.array((x[begin], x[-1])), np.array((b + eps, b + eps)), "--g")
-
-        plt.xlabel("n")
-        plt.ylabel("a(n)")
-
-        plt.axis([x[begin], x[-1], b - eps*2, b + eps*2])
-
-        return x[k], y[k]
+    fig, ax = plt.subplots()
+    ani = FuncAnimation(fig, update, frames=len(v), interval=1000, repeat=False)
+    plt.show()
 
 
 if __name__ == "__main__":
-    t = (1, 1000, 1)
-    x = np.arange(*t)
-    y = func01(x)
-    b = -1.333333333  # границя
-    eps = 0.01
-    x0, y0 = plot_seq(x, y, b, eps, True)
-    print(x0, y0)
-    plt.show()
+    main(10)
